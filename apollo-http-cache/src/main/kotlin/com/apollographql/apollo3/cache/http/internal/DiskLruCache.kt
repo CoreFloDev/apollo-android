@@ -185,7 +185,6 @@ internal class DiskLruCache(
   }
 
   @Synchronized
-  @Throws(IOException::class)
   fun initialize() {
     assert(Thread.holdsLock(this))
     if (initialized) {
@@ -226,7 +225,6 @@ internal class DiskLruCache(
     initialized = true
   }
 
-  @Throws(IOException::class)
   private fun readJournal() {
     fileSystem.source(journalFile).buffer().use { source ->
       val magic = source.readUtf8LineStrict()
@@ -274,7 +272,6 @@ internal class DiskLruCache(
     return faultHidingSink.buffer()
   }
 
-  @Throws(IOException::class)
   private fun readJournalLine(line: String) {
     val firstSpace = line.indexOf(' ')
     if (firstSpace == -1) {
@@ -315,7 +312,6 @@ internal class DiskLruCache(
    * Computes the initial size and collects garbage as a part of opening the cache. Dirty entries
    * are assumed to be inconsistent and will be deleted.
    */
-  @Throws(IOException::class)
   private fun processJournal() {
     fileSystem.delete(journalFileTmp)
     val i = lruEntries.values.iterator()
@@ -341,7 +337,6 @@ internal class DiskLruCache(
    * exists.
    */
   @Synchronized
-  @Throws(IOException::class)
   fun rebuildJournal() {
     if (journalWriter != null) {
       journalWriter!!.close()
@@ -380,7 +375,6 @@ internal class DiskLruCache(
    * readable. If a value is returned, it is moved to the head of the LRU queue.
    */
   @Synchronized
-  @Throws(IOException::class)
   operator fun get(key: String): Snapshot? {
     initialize()
     checkNotClosed()
@@ -399,13 +393,11 @@ internal class DiskLruCache(
   /**
    * Returns an editor for the entry named `key`, or null if another edit is in progress.
    */
-  @Throws(IOException::class)
   fun edit(key: String): Editor? {
     return edit(key, ANY_SEQUENCE_NUMBER)
   }
 
   @Synchronized
-  @Throws(IOException::class)
   fun edit(key: String, expectedSequenceNumber: Long): Editor? {
     initialize()
     checkNotClosed()
@@ -460,14 +452,12 @@ internal class DiskLruCache(
    * greater than the max size if a background deletion is pending.
    */
   @Synchronized
-  @Throws(IOException::class)
   fun size(): Long {
     initialize()
     return size
   }
 
   @Synchronized
-  @Throws(IOException::class)
   fun completeEdit(editor: Editor, success: Boolean) {
     val entry = editor.entry
     check(entry.currentEditor == editor)
@@ -540,7 +530,6 @@ internal class DiskLruCache(
    * @return true if an entry was removed.
    */
   @Synchronized
-  @Throws(IOException::class)
   fun remove(key: String): Boolean {
     initialize()
     checkNotClosed()
@@ -551,7 +540,6 @@ internal class DiskLruCache(
     return removed
   }
 
-  @Throws(IOException::class)
   fun removeEntry(entry: Entry?): Boolean {
     if (entry!!.currentEditor != null) {
       entry.currentEditor!!.detach() // Prevent the edit from completing normally.
@@ -577,7 +565,6 @@ internal class DiskLruCache(
 
   /** Force buffered operations to the filesystem.  */
   @Synchronized
-  @Throws(IOException::class)
   override fun flush() {
     if (!initialized) return
     checkNotClosed()
@@ -587,7 +574,6 @@ internal class DiskLruCache(
 
   /** Closes this cache. Stored values will remain on the filesystem.  */
   @Synchronized
-  @Throws(IOException::class)
   override fun close() {
     if (!initialized || isClosed) {
       isClosed = true
@@ -605,7 +591,6 @@ internal class DiskLruCache(
     isClosed = true
   }
 
-  @Throws(IOException::class)
   fun trimToSize() {
     while (size > maxSize) {
       val toEvict = lruEntries.values.iterator().next()
@@ -618,7 +603,6 @@ internal class DiskLruCache(
    * Closes the cache and deletes all of its stored values. This will delete all files in the cache
    * directory including files that weren't created by the cache.
    */
-  @Throws(IOException::class)
   fun delete() {
     close()
     fileSystem.deleteRecursively(directory)
@@ -629,7 +613,6 @@ internal class DiskLruCache(
    * values will not be stored.
    */
   @Synchronized
-  @Throws(IOException::class)
   fun evictAll() {
     initialize()
     // Copying for safe iteration.
@@ -662,7 +645,6 @@ internal class DiskLruCache(
    * The returned iterator supports [Iterator.remove].
    */
   @Synchronized
-  @Throws(IOException::class)
   fun snapshots(): MutableIterator<Snapshot> {
     initialize()
     return object : MutableIterator<Snapshot> {
@@ -731,7 +713,6 @@ internal class DiskLruCache(
      * Returns an editor for this snapshot's entry, or null if either the entry has changed since
      * this snapshot was created or if another edit is in progress.
      */
-    @Throws(IOException::class)
     fun edit(): Editor? {
       return this@DiskLruCache.edit(key, sequenceNumber)
     }
@@ -826,7 +807,6 @@ internal class DiskLruCache(
      * Commits this edit so it is visible to readers.  This releases the edit lock so another edit
      * may be started on the same key.
      */
-    @Throws(IOException::class)
     fun commit() {
       synchronized(this@DiskLruCache) {
         check(!done)
@@ -841,7 +821,6 @@ internal class DiskLruCache(
      * Aborts this edit. This releases the edit lock so another edit may be started on the same
      * key.
      */
-    @Throws(IOException::class)
     fun abort() {
       synchronized(this@DiskLruCache) {
         check(!done)
@@ -881,7 +860,6 @@ internal class DiskLruCache(
     var sequenceNumber: Long = 0
 
     /** Set lengths using decimal numbers like "10123".  */
-    @Throws(IOException::class)
     fun setLengths(strings: Array<String>) {
       if (strings.size != valueCount) {
         throw invalidLengths(strings)
@@ -896,14 +874,12 @@ internal class DiskLruCache(
     }
 
     /** Append space-prefixed lengths to `writer`.  */
-    @Throws(IOException::class)
     fun writeLengths(writer: BufferedSink?) {
       for (length in lengths) {
         writer!!.writeByte(' '.code).writeDecimalLong(length)
       }
     }
 
-    @Throws(IOException::class)
     private fun invalidLengths(strings: Array<String>): IOException {
       throw IOException("unexpected journal line: " + strings.contentToString())
     }

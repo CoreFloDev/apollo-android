@@ -15,7 +15,6 @@
  */
 package com.apollographql.apollo3.api.internal.json
 
-import com.apollographql.apollo3.api.Throws
 import com.apollographql.apollo3.api.Upload
 import com.apollographql.apollo3.api.internal.json.BufferedSourceJsonReader.Companion.MAX_STACK_SIZE
 import com.apollographql.apollo3.api.json.JsonNumber
@@ -73,24 +72,20 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     pushScope(JsonScope.EMPTY_DOCUMENT)
   }
 
-  @Throws(IOException::class)
   override fun beginArray(): JsonWriter {
     writeDeferredName()
     return open(JsonScope.EMPTY_ARRAY, "[")
   }
 
-  @Throws(IOException::class)
   override fun endArray(): JsonWriter {
     return close(JsonScope.EMPTY_ARRAY, JsonScope.NONEMPTY_ARRAY, "]")
   }
 
-  @Throws(IOException::class)
   override fun beginObject(): JsonWriter {
     writeDeferredName()
     return open(JsonScope.EMPTY_OBJECT, "{")
   }
 
-  @Throws(IOException::class)
   override fun endObject(): JsonWriter {
     return close(JsonScope.EMPTY_OBJECT, JsonScope.NONEMPTY_OBJECT, "}")
   }
@@ -98,7 +93,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
   /**
    * Enters a new scope by appending any necessary whitespace and the given bracket.
    */
-  @Throws(IOException::class)
   private fun open(empty: Int, openBracket: String): JsonWriter {
     beforeValue()
     pushScope(empty)
@@ -110,7 +104,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
   /**
    * Closes the current scope by appending any necessary whitespace and the given bracket.
    */
-  @Throws(IOException::class)
   private fun close(empty: Int, nonempty: Int, closeBracket: String): JsonWriter {
     val context = peekScope()
     check(!(context != nonempty && context != empty)) { "Nesting problem." }
@@ -125,7 +118,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     return this
   }
 
-  @Throws(IOException::class)
   override fun name(name: String): JsonWriter {
     check(stackSize != 0) { "JsonWriter is closed." }
     check(deferredName == null) { "Nesting problem." }
@@ -134,7 +126,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     return this
   }
 
-  @Throws(IOException::class)
   private fun writeDeferredName() {
     if (deferredName != null) {
       beforeName()
@@ -143,7 +134,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     }
   }
 
-  @Throws(IOException::class)
   override fun value(value: String): JsonWriter {
     writeDeferredName()
     beforeValue()
@@ -152,13 +142,10 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     return this
   }
 
-  @Throws(IOException::class)
   override fun nullValue() = jsonValue("null")
 
-  @Throws(IOException::class)
   override fun value(value: Boolean) = jsonValue(if (value) "true" else "false")
 
-  @Throws(IOException::class)
   override fun value(value: Double): JsonWriter {
     require(!(!isLenient && (value.isNaN() || value.isInfinite()))) {
       "Numeric values must be finite, but was $value"
@@ -166,7 +153,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     return jsonValue(value.toString())
   }
 
-  @Throws(IOException::class)
   override fun value(value: Int) = jsonValue(value.toString())
 
   override fun value(value: Long) = jsonValue(value.toString())
@@ -193,7 +179,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
    * Ensures all buffered data is written to the underlying [okio.Sink]
    * and flushes that writer.
    */
-  @Throws(IOException::class)
   override fun flush() {
     check(stackSize != 0) { "JsonWriter is closed." }
     sink.flush()
@@ -204,7 +189,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
    *
    * @throws IOException if the JSON document is incomplete.
    */
-  @Throws(IOException::class)
   override fun close() {
     sink.close()
     val size = stackSize
@@ -214,7 +198,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     stackSize = 0
   }
 
-  @Throws(IOException::class)
   private fun newline() {
     if (indent == null) {
       return
@@ -231,7 +214,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
   /**
    * Inserts any necessary separators and whitespace before a name. Also adjusts the stack to expect the name's value.
    */
-  @Throws(IOException::class)
   private fun beforeName() {
     val context = peekScope()
     if (context == JsonScope.NONEMPTY_OBJECT) { // first in object
@@ -248,7 +230,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
    * Inserts any necessary separators and whitespace before a literal value, inline array, or inline object. Also adjusts the stack to
    * expect either a closing bracket or another element.
    */
-  @Throws(IOException::class)
   private fun beforeValue() {
     when (peekScope()) {
       JsonScope.NONEMPTY_DOCUMENT -> {
@@ -324,7 +305,6 @@ class BufferedSinkJsonWriter(private val sink: BufferedSink) : JsonWriter {
     /**
      * Writes `value` as a string literal to `sink`. This wraps the value in double quotes and escapes those characters that require it.
      */
-    @Throws(IOException::class)
     fun string(sink: BufferedSink, value: String) {
       val replacements = REPLACEMENT_CHARS
       sink.writeByte('"'.code)

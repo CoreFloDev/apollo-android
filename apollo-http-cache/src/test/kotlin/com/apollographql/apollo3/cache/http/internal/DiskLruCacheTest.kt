@@ -57,12 +57,10 @@ class DiskLruCacheTest {
   private var cache: DiskLruCache? = null
   private val toClose: Deque<DiskLruCache> = ArrayDeque()
 
-  @Throws(IOException::class)
   private fun createNewCache() {
     createNewCacheWithSize(Int.MAX_VALUE)
   }
 
-  @Throws(IOException::class)
   private fun createNewCacheWithSize(maxSize: Int) {
     cache = DiskLruCache(fileSystem, cacheDir!!, appVersion, 2, maxSize.toLong(), executor)
     synchronized(cache!!) { cache!!.initialize() }
@@ -94,7 +92,6 @@ class DiskLruCacheTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun recoverFromInitializationFailure() {
     // Add an uncommitted entry. This will get detected on initialization, and the cache will
     // attempt to delete the file. Do not explicitly close the cache here so the entry is left as
@@ -1927,18 +1924,15 @@ class DiskLruCacheTest {
     snapshot!!.close()
   }
 
-  @Throws(IOException::class)
   private fun assertSnapshotValue(snapshot: DiskLruCache.Snapshot?, index: Int, value: String) {
     Truth.assertThat(sourceAsString(snapshot!!.getSource(index))).isEqualTo(value)
     Truth.assertThat(snapshot.getLength(index)).isEqualTo(value.length)
   }
 
-  @Throws(IOException::class)
   private fun sourceAsString(source: Source?): String? {
     return source?.buffer()?.readUtf8()
   }
 
-  @Throws(IOException::class)
   private fun copyFile(from: File?, to: File?) {
     val source = fileSystem.source(from!!)
     val sink = fileSystem.sink(to!!).buffer()
@@ -1984,7 +1978,6 @@ class DiskLruCacheTest {
       }
     }
 
-    @Throws(IOException::class)
     private fun setString(editor: DiskLruCache.Editor?, index: Int, value: String?) {
       val writer = editor!!.newSink(index).buffer()
       writer.writeUtf8(value!!)

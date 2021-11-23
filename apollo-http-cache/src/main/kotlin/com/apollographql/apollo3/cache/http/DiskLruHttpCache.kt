@@ -77,7 +77,6 @@ class DiskLruHttpCache(private val fileSystem: FileSystem, private val directory
     }
   }
 
-  @Throws(IOException::class)
   fun delete() {
     cache = cacheLock.write {
       cache.delete()
@@ -85,7 +84,6 @@ class DiskLruHttpCache(private val fileSystem: FileSystem, private val directory
     }
   }
 
-  @Throws(IOException::class)
   fun remove(cacheKey: String) {
     // is `read` ok here?
     cacheLock.read {

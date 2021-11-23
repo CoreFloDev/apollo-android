@@ -23,7 +23,6 @@ import java.io.IOException
 /** A sink that never throws IOExceptions, even if the underlying sink does.  */
 internal open class FaultHidingSink(delegate: Sink?) : ForwardingSink(delegate!!) {
   private var hasErrors = false
-  @Throws(IOException::class)
   override fun write(source: Buffer, byteCount: Long) {
     if (hasErrors) {
       source.skip(byteCount)
@@ -37,7 +36,6 @@ internal open class FaultHidingSink(delegate: Sink?) : ForwardingSink(delegate!!
     }
   }
 
-  @Throws(IOException::class)
   override fun flush() {
     if (hasErrors) return
     try {
@@ -48,7 +46,6 @@ internal open class FaultHidingSink(delegate: Sink?) : ForwardingSink(delegate!!
     }
   }
 
-  @Throws(IOException::class)
   override fun close() {
     if (hasErrors) return
     try {

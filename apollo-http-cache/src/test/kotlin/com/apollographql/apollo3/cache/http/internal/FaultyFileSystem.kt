@@ -56,19 +56,16 @@ class FaultyFileSystem constructor(delegate: FileSystem?) : ForwardingFileSystem
     }
   }
 
-  @Throws(IOException::class)
   override fun atomicMove(source: Path, target: Path) {
     if (renameFaults.contains(source) || renameFaults.contains(target)) throw IOException("boom!")
     super.atomicMove(source, target)
   }
 
-  @Throws(IOException::class)
   override fun delete(path: Path, mustExist: Boolean) {
     if (deleteFaults.contains(path)) throw IOException("boom!")
     super.delete(path, mustExist)
   }
 
-  @Throws(IOException::class)
   override fun deleteRecursively(fileOrDirectory: Path, mustExist: Boolean) {
     if (deleteFaults.contains(fileOrDirectory)) throw IOException("boom!")
     super.deleteRecursively(fileOrDirectory, mustExist)
