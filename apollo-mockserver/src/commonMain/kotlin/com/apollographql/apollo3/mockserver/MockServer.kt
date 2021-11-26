@@ -27,7 +27,6 @@ interface MockServerIface {
 }
 
 
-@Suppress("FunctionName")
 @ApolloExperimental
 expect class MockServer() : MockServerIface {
 }
